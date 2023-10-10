@@ -5,13 +5,17 @@ pipeline {
         stage('Select Branch') {
             steps {
                 script {
-                    // Use 'git ls-remote' to dynamically fetch branch names from the remote repository
-                    def branchList = sh(script: "git ls-remote --heads origin | awk -F'/' '{print \$3}'", returnStdout: true).trim().split('\n')
+                    def gitRepoUrl = 'https://github.com/Linku-124/test.git'  // Replace with your repository URL
+                    def gitBranches = []
+                    
+                    // Run a shell command to fetch branch names
+                    def branches = bat(script: "git ls-remote --heads $gitRepoUrl | awk -F'/' '{print \$3}'", returnStatus: true, returnStdout: true).trim()
+                    gitBranches = branches.split('\n')
                     
                     def userInput = input(
                         id: 'branchInput',
                         message: 'Select the branch to build:',
-                        parameters: [choice(name: 'BRANCH_NAME', choices: branchList.join('\n'), description: 'Select a branch to build')]
+                        parameters: [choice(name: 'BRANCH_NAME', choices: gitBranches.join('\n'), description: 'Select a branch to build')]
                     )
                     echo "Selected branch: ${userInput}"
                 }
