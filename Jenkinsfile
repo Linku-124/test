@@ -10,17 +10,22 @@ pipeline {
                     
                     // Check if the sh step succeeded
                     if (branchesOutput == 0) {
-                        def branches = branchesOutput.toString().trim()
+                        def branches = branchesOutput.toString().trim().split('\n')
+                        
+                        // Create a list of choice parameters
+                        def branchChoices = branches.collect { branchName ->
+                            return choice(name: branchName, value: branchName)
+                        }
                         
                         def userInput = input(
                             id: 'branchInput',
                             message: 'Select the branch to build:',
-                            parameters: [choice(name: 'BRANCH_NAME', choices: branches.split('\n'), description: 'Select a branch to build')]
+                            parameters: branchChoices
                         )
                         
                         echo "Selected branch: ${userInput}"
                     } else {
-                        error "Failed to fetch branch names from Git repository."
+                        error "Failed to fetch branch names from the Git repository."
                     }
                 }
             }
