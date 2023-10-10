@@ -28,7 +28,10 @@ pipeline {
                         parameters: branchChoices
                     )
                     
-                    echo "Selected branch: ${userInput}"
+                    // Store the selected branch in an environment variable
+                    env.BRANCH_TO_BUILD = userInput
+                    
+                    echo "Selected branch: ${env.BRANCH_TO_BUILD}"
                 }
             }
         }
@@ -36,7 +39,7 @@ pipeline {
         stage('Checkout and Build') {
             steps {
                 script {
-                    def selectedBranch = env.BRANCH_NAME
+                    def selectedBranch = env.BRANCH_TO_BUILD
                     checkout([$class: 'GitSCM', branches: [[name: selectedBranch]], doGenerateSubmoduleConfigurations: false, extensions: []])
                     sh "your-build-command-here"  // Replace with your build command
                 }
