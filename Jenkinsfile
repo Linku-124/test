@@ -13,7 +13,8 @@ pipeline {
                         message: 'Select the branch to build:',
                         parameters: [choice(name: 'BRANCH_NAME', choices: branchList.join('\n'), description: 'Select a branch to build')]
                     )
-                    echo "Selected branch: ${userInput}"
+                    selectedBranch = userInput ?: 'main' // Set a default branch if userInput is null or empty
+                    echo "Selected branch: ${selectedBranch}"
                 }
             }
         }
@@ -21,7 +22,6 @@ pipeline {
         stage('Checkout and Build') {
             steps {
                 script {
-                    def selectedBranch = env.BRANCH_NAME
                     checkout([$class: 'GitSCM', branches: [[name: selectedBranch]], doGenerateSubmoduleConfigurations: false, extensions: []])
                     sh "your-build-command-here"  // Replace with your build command
                 }
