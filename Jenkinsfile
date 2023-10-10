@@ -6,18 +6,22 @@ pipeline {
             steps {
                 script {
                     def gitRepoUrl = 'https://github.com/Linku-124/test.git'  // Replace with your repository URL
-                    def gitBranches = []
+                    def branchesOutput = sh(script: "git ls-remote --heads $gitRepoUrl | awk -F'/' '{print \$3}'", returnStatus: true, returnStdout: true)
                     
-                    // Run a shell command to fetch branch names
-                    def branches = sh(script: "git ls-remote --heads $gitRepoUrl | awk -F'/' '{print \$3}'", returnStatus: true, returnStdout: true).trim()
-                    gitBranches = branches.split('\n')
-                    
-                    def userInput = input(
-                        id: 'branchInput',
-                        message: 'Select the branch to build:',
-                        parameters: [choice(name: 'BRANCH_NAME', choices: gitBranches.join('\n'), description: 'Select a branch to build')]
-                    )
-                    echo "Selected branch: ${userInput}"
+                    // Check if the sh step succeeded
+                    if (branchesOutput == 0) {
+                        def branches = branchesOutput.toString().trim()
+                        
+                        def userInput = input(
+                            id: 'branchInput',
+                            message: 'Select the branch to build:',
+                            parameters: [choice(name: 'BRANCH_NAME', choices: branches.split('\n'), description: 'Select a branch to build')]
+                        )
+                        
+                        echo "Selected branch: ${userInput}"
+                    } else {
+                        error "Failed to fetch branch names from Git repository."
+                    }
                 }
             }
         }
