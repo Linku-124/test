@@ -9,7 +9,7 @@ pipeline {
                     def gitBranches = []
                     
                     // Run a shell command to fetch branch names
-                    def branches = bat(script: "git ls-remote --heads $gitRepoUrl | awk -F'/' '{print \$3}'", returnStatus: true, returnStdout: true).trim()
+                    def branches = sh(script: "git ls-remote --heads $gitRepoUrl | awk -F'/' '{print \$3}'", returnStatus: true, returnStdout: true).trim()
                     gitBranches = branches.split('\n')
                     
                     def userInput = input(
