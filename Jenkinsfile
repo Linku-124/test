@@ -1,38 +1,34 @@
 pipeline {
     agent any
-    
-    parameters {
-        extendedChoice(
-            name: 'BRANCH_NAME',
-            description: 'Select a branch to build:',
-            type: 'PT_SINGLE_SELECT',
-            groovyScript: '''
-                def gitRepoUrl = 'https://github.com/Linku-124/test.git'
-                def branchesOutput = sh(script: "git ls-remote --heads $gitRepoUrl | awk -F'/' '{print \$3}'", returnStdout: true).trim()
-                def branches = branchesOutput.split('\n')
-                return branches
-            '''
-        )
-    }
-    
+
     stages {
-        stage('Checkout SCM') {
+        stage('Select Branch') {
             steps {
-                checkout scm
+                script {
+                    // Use 'git ls-remote' to dynamically fetch branch names from the remote repository
+                    def branchList = sh(script: "git ls-remote --heads origin | awk -F'/' '{print \$3}'", returnStdout: true).trim().split('\n')
+
+                    def userInput = input(
+                        id: 'branchInput',
+                        message: 'Select the branch to build:',
+                        parameters: [choice(name: 'BRANCH_NAME', choices: branchList.join('\n'), description: 'Select a branch to build')]
+                    )
+                    echo "Selected branch: ${userInput}"
+                }
             }
         }
-        
+
         stage('Checkout and Build') {
             steps {
                 script {
-                    def selectedBranch = params.BRANCH_NAME
+                    def selectedBranch = env.BRANCH_NAME
                     checkout([$class: 'GitSCM', branches: [[name: selectedBranch]], doGenerateSubmoduleConfigurations: false, extensions: []])
                     sh "your-build-command-here"  // Replace with your build command
                 }
             }
         }
     }
-    
+
     post {
         success {
             echo "Build succeeded!"
