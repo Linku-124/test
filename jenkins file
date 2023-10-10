@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Select Branch') {
+            steps {
+                script {
+                    def userInput = input(
+                        id: 'branchInput',
+                        message: 'Select the branch to build:',
+                        parameters: [choice(name: 'BRANCH_NAME', choices: 'master\ndevelop\nfeature-branch', description: 'Select a branch to build')]
+                    )
+                    echo "Selected branch: ${userInput}"
+                }
+            }
+        }
+        
+        stage('Checkout and Build') {
+            steps {
+                script {
+                    def selectedBranch = env.BRANCH_NAME
+                    checkout([$class: 'GitSCM', branches: [[name: selectedBranch]], doGenerateSubmoduleConfigurations: false, extensions: []])
+                    sh "your-build-command-here"  // Replace with your build command
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "Build succeeded!"
+        }
+        failure {
+            echo "Build failed!"
+        }
+    }
+}
