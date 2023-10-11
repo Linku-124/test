@@ -24,7 +24,7 @@ pipeline {
                 script {
                     checkout([$class: 'GitSCM', branches: [[name: selectedBranch]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[url: env.GIT_URL]]])
                     // Replace with your actual build command
-                    sh "your-build-command-here"
+                    sh "echo Hi"
                 }
             }
         }
