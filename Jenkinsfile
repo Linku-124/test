@@ -1,11 +1,14 @@
 pipeline {
     agent any
+    environment {
+        GIT_URL = 'https://github.com/Linku-124/test.git'
+    }
     stages {
         stage('Select Branch') {
             steps {
                 script {
                     // Use 'git ls-remote' to dynamically fetch branch names from the remote repository
-                    def branchList = sh(script: "git ls-remote --heads origin | awk -F'/' '{print \$3}'", returnStdout: true).trim().split('\n')
+                    def branchList = sh(script: "git ls-remote --heads $GIT_URL | awk -F'/' '{print \$3}'", returnStdout: true).trim().split('\n')
                     def userInput = input(
                         id: 'branchInput',
                         message: 'Select the branch to build:',
@@ -19,7 +22,7 @@ pipeline {
         stage('Checkout and Build') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: selectedBranch]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[url: 'your-git-repo-url']]])
+                    checkout([$class: 'GitSCM', branches: [[name: selectedBranch]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[url: env.GIT_URL]]])
                     // Replace with your actual build command
                     sh "your-build-command-here"
                 }
